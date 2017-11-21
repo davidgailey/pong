@@ -32,17 +32,20 @@
 		drawColorRect(2,210,10,100,'white');
 
 		// draw "ball"
-		canvasContext.fillStyle('red');
-		canvasContext.beginPath();
-		canvasContext.arc(ballX, 100,10, 0,Math.PI*2,true);
-		canvasContext.fill();
-		
+		drawColorCircle(ballX, 100,10,'white');
 
 	}
 
 	function drawColorRect (x,y,width,height,color){
 		canvasContext.fillStyle = color;
 		canvasContext.fillRect(x,y,width,height);
+	}
+
+	function drawColorCircle (centerX,centerY,radius,color) {
+		canvasContext.fillStyle = color;
+		canvasContext.beginPath();
+		canvasContext.arc(centerX, centerY,radius, 0,Math.PI*2,true);
+		canvasContext.fill();
 	}
 
 	window.onload = function() {
