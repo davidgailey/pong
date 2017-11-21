@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Pong!!!</title>
+</head>
+<body>
+
+<canvas id="pongCanvas"
+	width="800"
+	height="600">
+</canvas>
+
+<script type="text/javascript">
+	var canvas, canvasContext;
+	var ballX = 50;
+	var ballSpeedX = 5;
+	var framesPerSecond = 30;
+
+	function moveEverything(){
+		ballX = ballX + ballSpeedX;
+		if (ballX > canvas.width || ballX < 0) {
+			ballSpeedX = -ballSpeedX;
+		}
+		
+	}
+	
+	function drawEverything(){
+		// draw background
+		drawColorRect(0,0,canvas.width,canvas.height,'black');
+
+		// draw player paddle
+		drawColorRect(2,210,10,100,'white');
+
+		// draw "ball"
+		canvasContext.fillStyle('red');
+		canvasContext.beginPath();
+		canvasContext.arc(ballX, 100,10, 0,Math.PI*2,true);
+		canvasContext.fill();
+		
+
+	}
+
+	function drawColorRect (x,y,width,height,color){
+		canvasContext.fillStyle = color;
+		canvasContext.fillRect(x,y,width,height);
+	}
+
+	window.onload = function() {
+		canvas = document.getElementById('pongCanvas');
+		canvasContext = canvas.getContext('2d');
+
+		window.setInterval(function(){
+			moveEverything();
+			drawEverything();
+		}, 1000/framesPerSecond);
+	}
+
+
+</script>
+
+</body>
+</html>
