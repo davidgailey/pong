@@ -12,14 +12,47 @@
 
 <script type="text/javascript">
 	var canvas, canvasContext;
-	var ballX = 50;
-	var ballSpeedX = 5;
 	var framesPerSecond = 30;
+
+	// ball options
+	var ballX = 50;
+	var ballY = 50;
+	var ballSpeedX = 10;
+	var ballSpeedY = 4;
+
+	// paddle options
+	var paddle1Y = 250;
+	var paddle2Y = 250;
+	const paddleHeight = 100;
+	const paddleWidth = 10;
 
 	function moveEverything(){
 		ballX = ballX + ballSpeedX;
-		if (ballX > canvas.width || ballX < 0) {
-			ballSpeedX = -ballSpeedX;
+		ballY = ballY + ballSpeedY;
+
+		// handle reflection off left side paddle
+		if (ballX < 0) {
+			// if ball hits where paddle is, reverse direction
+			if(ballY > paddle1Y && ballY < paddle1Y + paddleHeight){
+				ballSpeedX = -ballSpeedX;
+			}else{
+				ballReset();
+			}
+		}
+
+		// handle reflection off right side paddle
+		if (ballX > canvas.width) {
+			// if ball hits where paddle is, reverse direction
+			if(ballY > paddle2Y && ballY < paddle2Y + paddleHeight){
+				ballSpeedX = -ballSpeedX;
+			}else{
+				ballReset();
+			}
+		}
+
+		// bounce ball off top and bottom
+		if (ballY > canvas.height || ballY < 0) {
+			ballSpeedY = -ballSpeedY;
 		}
 		
 	}
@@ -29,10 +62,13 @@
 		drawColorRect(0,0,canvas.width,canvas.height,'black');
 
 		// draw player paddle
-		drawColorRect(2,210,10,100,'white');
+		drawColorRect(2,paddle1Y,paddleWidth,paddleHeight,'white');
+
+		// draw cpu paddle
+		drawColorRect(canvas.width - paddleWidth,paddle2Y,paddleWidth,paddleHeight,'white');
 
 		// draw "ball"
-		drawColorCircle(ballX, 100,10,'white');
+		drawColorCircle(ballX,ballY,8,'white');
 
 	}
 
@@ -44,8 +80,26 @@
 	function drawColorCircle (centerX,centerY,radius,color) {
 		canvasContext.fillStyle = color;
 		canvasContext.beginPath();
-		canvasContext.arc(centerX, centerY,radius, 0,Math.PI*2,true);
+		canvasContext.arc(centerX,centerY,radius, 0,Math.PI*2,true);
 		canvasContext.fill();
+	}
+
+	function calculateMousePos(event){
+		let rect = canvas.getBoundingClientRect();
+		let root = document.documentElement;
+		let mouseX = event.clientX - rect.left - root.scrollLeft;
+		let mouseY = event.clientY - rect.top - root.scrollTop;
+
+		return {x:mouseX,y:mouseY}
+	}
+
+	function ballReset(){
+		// change ball direction to other player
+		ballSpeedX = -ballSpeedX
+
+		// center ball
+		ballX = canvas.width/2;
+		ballY = canvas.height/2;
 	}
 
 	window.onload = function() {
@@ -56,6 +110,12 @@
 			moveEverything();
 			drawEverything();
 		}, 1000/framesPerSecond);
+
+		canvas.addEventListener('mousemove',
+			function(event){
+				let mousePos = calculateMousePos(event);
+				paddle1Y = mousePos.y - (paddleHeight/2);
+			});
 	}
 
 
