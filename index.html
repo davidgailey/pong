@@ -26,9 +26,16 @@
 	const paddleHeight = 100;
 	const paddleWidth = 10;
 
+	// score variables
+	var player1Score = 0;
+	var player2Score = 0;
+
 	function moveEverything(){
-		ballX = ballX + ballSpeedX;
-		ballY = ballY + ballSpeedY;
+
+		computerMovement();
+
+		ballX += ballSpeedX;
+		ballY += ballSpeedY;
 
 		// handle reflection off left side paddle
 		if (ballX < 0) {
@@ -37,6 +44,7 @@
 				ballSpeedX = -ballSpeedX;
 			}else{
 				ballReset();
+				player2Score += 1;
 			}
 		}
 
@@ -47,6 +55,7 @@
 				ballSpeedX = -ballSpeedX;
 			}else{
 				ballReset();
+				player1Score += 1;
 			}
 		}
 
@@ -62,13 +71,19 @@
 		drawColorRect(0,0,canvas.width,canvas.height,'black');
 
 		// draw player paddle
-		drawColorRect(2,paddle1Y,paddleWidth,paddleHeight,'white');
+		drawColorRect(0,paddle1Y,paddleWidth,paddleHeight,'white');
 
 		// draw cpu paddle
 		drawColorRect(canvas.width - paddleWidth,paddle2Y,paddleWidth,paddleHeight,'white');
 
 		// draw "ball"
 		drawColorCircle(ballX,ballY,8,'white');
+
+		// draw score
+		canvasContext.font = '48px sans-serif';
+		canvasContext.fillText(player1Score, 100, 100);
+		canvasContext.fillText(player2Score, canvas.width -100, 100);
+
 
 	}
 
@@ -100,6 +115,16 @@
 		// center ball
 		ballX = canvas.width/2;
 		ballY = canvas.height/2;
+	}
+
+	function computerMovement(){
+		let paddle2YCenter = paddle2Y + (paddleHeight/2)
+
+		if(paddle2YCenter < ballY - 35){
+			paddle2Y += 6;
+		}else if(paddle2YCenter > ballY + 35){
+			paddle2Y -= 6;
+		}
 	}
 
 	window.onload = function() {
