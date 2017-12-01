@@ -12,7 +12,8 @@
 
 <script type="text/javascript">
 	var canvas, canvasContext;
-	var framesPerSecond = 30;
+	var framesPerSecond = 40;
+	var intervalHandle;
 
 	// ball options
 	var ballX = 50;
@@ -29,8 +30,13 @@
 	// score variables
 	var player1Score = 0;
 	var player2Score = 0;
+	const winningScore = 3;
+	var winScreenActive = false;
+
 
 	function moveEverything(){
+
+		if(winScreenActive) return;
 
 		computerMovement();
 
@@ -42,9 +48,16 @@
 			// if ball hits where paddle is, reverse direction
 			if(ballY > paddle1Y && ballY < paddle1Y + paddleHeight){
 				ballSpeedX = -ballSpeedX;
+
+				// allow player some control over ball 
+				// by changing ballSpeedY depending on where they hit ball off paddle
+				let deltaY = ballY - (paddle1Y + paddleHeight/2);
+				ballSpeedY = deltaY * 0.35;
+
 			}else{
+				
+				player2Score += 1;  // increment score before ball reset
 				ballReset();
-				player2Score += 1;
 			}
 		}
 
@@ -53,9 +66,16 @@
 			// if ball hits where paddle is, reverse direction
 			if(ballY > paddle2Y && ballY < paddle2Y + paddleHeight){
 				ballSpeedX = -ballSpeedX;
+
+				// allow player some control over ball 
+				// by changing ballSpeedY depending on where they hit ball off paddle
+				let deltaY = ballY - (paddle2Y + paddleHeight/2);
+				ballSpeedY = deltaY * 0.35;
+
 			}else{
+				
+				player1Score += 1;  // increment score before ball reset
 				ballReset();
-				player1Score += 1;
 			}
 		}
 
@@ -67,8 +87,31 @@
 	}
 	
 	function drawEverything(){
+		
 		// draw background
-		drawColorRect(0,0,canvas.width,canvas.height,'black');
+		let bgAlpha= winScreenActive ? 0.5 : 0.7; //alpha gives ball motion blur effect, win screen alpha can be different via first value
+		drawColorRect(0,0,canvas.width,canvas.height,'rgba(0,0,0,'+bgAlpha+')');
+		
+		// win screen draw
+		if(winScreenActive){
+			let winnerText = player1Score > player2Score ? "Player 1 Wins!" : "Player 2 Wins!";
+
+			// draw winner text
+			canvasContext.fillStyle = "white";
+			canvasContext.font = '36px sans-serif';
+			canvasContext.fillText(winnerText, 290, 180);
+
+			// draw restart game text
+			canvasContext.font = '24px sans-serif';
+			canvasContext.fillText("click to restart game", 298, 280);
+
+			// stop running interval and return before drawing other game elements
+			window.clearInterval(intervalHandle);
+			return;
+		}
+
+		// draw net
+		drawNet(0.4);
 
 		// draw player paddle
 		drawColorRect(0,paddle1Y,paddleWidth,paddleHeight,'white');
@@ -87,16 +130,22 @@
 
 	}
 
-	function drawColorRect (x,y,width,height,color){
+	function drawColorRect(x,y,width,height,color){
 		canvasContext.fillStyle = color;
 		canvasContext.fillRect(x,y,width,height);
 	}
 
-	function drawColorCircle (centerX,centerY,radius,color) {
+	function drawColorCircle(centerX,centerY,radius,color) {
 		canvasContext.fillStyle = color;
 		canvasContext.beginPath();
 		canvasContext.arc(centerX,centerY,radius, 0,Math.PI*2,true);
 		canvasContext.fill();
+	}
+
+	function drawNet(){
+		for (var i = 0; i < canvas.height; i+=40) {
+			drawColorRect(canvas.width/2-1,i,2,20,'rgba(255,255,255,0.2)');
+		}
 	}
 
 	function calculateMousePos(event){
@@ -109,6 +158,12 @@
 	}
 
 	function ballReset(){
+
+		// check to see if we have a winner
+		if(player1Score >= winningScore || player2Score >= winningScore){
+			winScreenActive = true;
+		}
+
 		// change ball direction to other player
 		ballSpeedX = -ballSpeedX
 
@@ -127,20 +182,42 @@
 		}
 	}
 
+	function handleMouseClick(e){
+		if(winScreenActive){
+			player1Score = 0;
+			player2Score = 0;
+			winScreenActive = false;
+
+			// start up interval that makes animation possible
+			startAnimation();
+		}
+	}
+
+	function startAnimation(){
+		// start up interval that makes animation possible
+		intervalHandle = window.setInterval(function(){
+			moveEverything();
+			drawEverything();
+		}, 1000/framesPerSecond);
+	}
+
 	window.onload = function() {
 		canvas = document.getElementById('pongCanvas');
 		canvasContext = canvas.getContext('2d');
 
-		window.setInterval(function(){
-			moveEverything();
-			drawEverything();
-		}, 1000/framesPerSecond);
+		// start up interval that makes animation possible
+		startAnimation();
 
+		// mouse move event for player paddle
 		canvas.addEventListener('mousemove',
 			function(event){
 				let mousePos = calculateMousePos(event);
 				paddle1Y = mousePos.y - (paddleHeight/2);
 			});
+
+		// click listener to restart game when on end screen
+		canvas.addEventListener('mousedown',handleMouseClick);
+
 	}
 
 
